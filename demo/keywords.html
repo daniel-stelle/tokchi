@@ -1,0 +1,94 @@
+<head>
+    <title>Tokchi Keywords Demo</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="keywords.css">
+    <script type="text/javascript" src="http://cdn.jsdelivr.net/jquery/3.0.0-alpha1/jquery.min.js"></script>
+    <script type="application/javascript" src="../src/jquery.tokchi.js"></script>
+    <script type="application/javascript">
+        $(document).ready(function() {
+            $.getJSON('https://cdn.rawgit.com/adambom/dictionary/master/dictionary.json', function(data) {
+                var index = {};
+                var id = 1;
+                
+                for (var key in data) {
+                    key = key.toLowerCase();
+                    var subIndex = index[key.charAt(0)] || (index[key.charAt(0)] = {});
+                    subIndex[key] = {
+                        'id' : (id++),
+                        'actual' : key,
+                        'label': '+' + key
+                    };
+                }
+
+                $('#search').tokchify({
+                    dropdownStyle : 'follows',
+                    onReady : function(tokchi) {
+                        window.tokchi = tokchi;
+                    },
+                    onPressReturn : function(tokchi) {
+                        $('#selection').text(JSON.stringify(tokchi.getValue()));
+                        return true;
+                    },
+                    onChange : function(tokchi) {
+                        console.debug('Did change');
+                        var tokens = tokchi.getTokens();
+                        var sel = '';
+                        
+                        tokens.forEach(function(token) {
+                            if(sel) sel += ', ';
+                            sel += token.label + ' (ID=' + token.id + ')';
+                        });
+                        
+                        $('#selection').text(sel ? ('Selection = ' + sel) : '');
+                    },
+                    onCreateDropdownItem : function (tokchi, itemHTMLNode, resultItem) {
+                        $(itemHTMLNode)
+                            .text(resultItem.label)
+                            .append($('<div>')
+                            .addClass('sub')
+                            .text('ID: ' + resultItem.id));
+                    },
+                    onUnwrapToken : function (tokchi, tokenHTMLNode, tokenObj) {
+                        return tokenObj.actual;
+                    },
+                    onSearchKeyword : function(tokchi, keyword) {
+                        keyword = keyword.toLowerCase();
+                        var sub = index[keyword.charAt(0)];
+                        result = [];
+                        var count = 0;
+                        
+                        for (var key in sub) {
+                            if (key.indexOf(keyword) === 0) {
+                                if (count++ > 20) break;
+                                result.push(sub[key]);
+                            }
+                        }
+
+                        result.sort(function (a, b) {
+                            return a.label.localeCompare(b.label);
+                        });
+
+                        tokchi.setSearchResult(result);
+                    }
+                });
+                $('#pw').remove();
+            });
+        });
+        
+        function setDDStyle (style) {
+            tokchi.setDropdownStyle(style);
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Tokchi Keywords Demo</h1>
+    <label for="search">Search </label>
+    <div class="search" id="search"></div>
+    <label>Dropdown </label>
+        <input id="fixed" type="radio" name="dd-type" value="fixed" onchange="setDDStyle(this.value)" /><label for="fixed">fixed</label>
+        <input id="follows" type="radio" name="dd-type" value="follows" checked="checked" onchange="setDDStyle(this.value)" /><label for="follows">follows</label>
+    <h2 id="pw">Loading dictionary... please wait...</h2>
+    <div id="selection" style="margin-top:50px"></div>
+</body>
