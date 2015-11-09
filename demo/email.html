@@ -1,0 +1,172 @@
+<html>
+    <head>
+        <title>Tokchi Email Demo</title>
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="email.css">
+        <script type="text/javascript" src="http://cdn.jsdelivr.net/jquery/3.0.0-alpha1/jquery.min.js"></script>
+        <script type="application/javascript" src="../src/jquery.tokchi.js"></script>
+        <script type="text/javascript">
+        $(document).ready(function () {
+            var names = {};
+            var contacts = {};
+
+            function checkReady () {
+                function randomName (dict) {
+                    return dict[Math.round(Math.random() * (dict.length - 1))];
+                }
+                
+                if (names.female && names.male && names.last) {
+                    // Create 100 random contacts
+                    for (var i = 0; i < 100; ++i) {
+                        var first;
+                        var last = randomName(names.last);
+                        
+                        if (Math.random() > .5) {
+                            first = randomName(names.female);
+                        } else {
+                            first = randomName(names.male);
+                        }
+                        
+                        var contact = {
+                            label : (first + ' ' + last),
+                            first : first,
+                            last : last,
+                            email : (first.toLocaleLowerCase() + '.' + last.toLocaleLowerCase() + '@example.com')
+                        };
+                        
+                        var letter = first.charAt(0).toLocaleLowerCase();
+                        var list = contacts[letter];
+                        
+                        if (!list) {
+                            list = [];
+                            contacts[letter] = list;
+                        }
+                        
+                        list.push(contact);
+
+                        contact = {
+                            label : (last + ' ' + first),
+                            first : first,
+                            last : last,
+                            email : (first.toLocaleLowerCase() + '.' + last.toLocaleLowerCase() + '@example.com')
+                        };
+
+                        letter = last.charAt(0).toLocaleLowerCase();
+                        list = contacts[letter];
+                        
+                        if (!list) {
+                            list = [];
+                            contacts[letter] = list;
+                        }
+
+                        list.push(contact);
+                    }
+                }
+                
+                // Common Tokchi options object used for contact auto-completion
+                var options = {
+                    autoFocus : false,
+                    searchKeywordDelimiter : null,
+
+                    onSearchKeyword : function (tokchi, keyword) {
+                        keyword = keyword.toLocaleLowerCase();
+                        var letter = keyword.charAt(0);
+                        var list = contacts[letter];
+                        
+                        if (list) {
+                            var result = [];
+                            
+                            for (var i = 0; i < list.length; ++i) {
+                                var contact = list[i];
+                                
+                                if (contact.label.toLocaleLowerCase().indexOf(keyword) > -1) {
+                                    result.push(contact);
+                                }
+                            }
+                            
+                            result.sort(function (a, b) {
+                                return a.label.localeCompare(b.label);
+                            });
+
+                            tokchi.setSearchResult(result);
+                        } else {
+                            tokchi.setSearchResult(null);
+                        }
+                    },
+                    
+                    onCreateToken : function (tokchi, tokenHTMLNode, tokenObj) {
+                        $(tokenHTMLNode).text(tokenObj.email).append(
+                            $('<span>')
+                                .text('﹀')
+                                .addClass('token-arrow')
+                                .click(function () {
+                                    alert('This could be a context menu');
+                                })
+                        );
+                    },
+
+                    onCreateDropdownItem : function (tokchi, itemHTMLNode, resultItem) {
+                        $(itemHTMLNode).text(resultItem.label + '—' + resultItem.email);
+                    },
+                };
+                
+                // Set up input fields for email auto-completion
+                $('#cc, #from').tokchify(options);
+                options.autoFocus = true;
+                $('#to').tokchify(options);
+            }
+
+            $.getJSON('https://cdn.rawgit.com/dtudury/random-person/master/etc/female.first.json', function (data) {
+                var fn = data.weights;
+                var female = [];
+
+                for (var name in fn) {
+                    female.push(name);
+                }
+                
+                names.female = female;
+                checkReady();
+            });
+
+            $.getJSON('https://cdn.rawgit.com/dtudury/random-person/master/etc/male.first.json', function (data) {
+                var fn = data.weights;
+                var male = [];
+
+                for (var name in fn) {
+                    male.push(name);
+                }
+                
+                names.male = male;
+                checkReady();
+            });
+
+            $.getJSON('https://cdn.rawgit.com/dtudury/random-person/master/etc/all.last.json', function (data) {
+                var fn = data.weights;
+                var last = [];
+
+                for (var name in fn) {
+                    last.push(name);
+                }
+                
+                names.last = last;
+                checkReady();
+            });
+        });
+        </script>
+    </head>
+    <body>
+        <div class="line">
+            <label for="to">To: </label> <span><input class="input" id="to"/></span>
+        </div>
+        <div class="line">
+            <label for="cc">Cc: </label> <span><input class="input" id="cc"/></span>
+        </div>
+        <div class="line">
+            <label for="subject">Subject: </label> <span><input class="input" id="subject"/></span>
+        </div>
+        <div class="line">
+            <label for="from">From: </label> <span><input class="input" id="from"/></span>
+        </div>
+    </body>
+</html>
