@@ -1,5 +1,5 @@
 /**
- * Tokchi v 0.9.0
+ * Tokchi v 0.9.1
  * 
  * Cross-browser input field with MacOS-style "token" / Android-style "chip"
  * support.
@@ -161,6 +161,12 @@
             sel.addRange(range);
 
             return sel.getRangeAt(0);
+        },
+        
+        select : function (node) {
+            var range = selection.createRange();
+            range.selectNode($(node).get(0));
+            return selection.setRange(range);
         },
         
         setRangeAfter : function (obj) {
@@ -468,7 +474,7 @@
         if (!editedNode || (editedNode.nodeType == 3
             && editedNode.parentNode == this._inputNode
             // Allow editing text nodes of sufficient length
-            && (offset > 1 || editedNode.nodeValue.charAt(0).match(/[^\s\u00A0]/)))) return;
+            && (offset > 1 || editedNode.nodeValue.match(/[^\s\u00A0]/)))) return;
 
         do {
             var jeditedNode = $(editedNode);
@@ -520,7 +526,7 @@
      */ 
     Tokchi.prototype._onInput = function (e) {
         var self = this;
-        
+
         if (e.type == 'paste') {
             setTimeout(function () {
                 self._cleanInputMarkup();
@@ -543,7 +549,7 @@
                     var token = this._getClosestToken(false);
                     
                     if (token) {
-                        selection.setRangeAfter(token);
+                        selection.setRangeBefore(token);
                     }
                 }
                 return;
@@ -561,6 +567,7 @@
 
             case KEY.DEL:
                 if (e.type == 'keydown') {
+                    this._cleanInputMarkup();
                     var token = this._getClosestToken(true);
 
                     if (token) {
@@ -575,6 +582,7 @@
                 
             case KEY.BACKSPACE:
                 if (e.type == 'keydown') {
+                    this._cleanInputMarkup();
                     var token = this._getClosestToken(false);
 
                     if (token) {
