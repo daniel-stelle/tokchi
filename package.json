@@ -5,6 +5,13 @@
 	"author": "Thomas Iguchi <ti at nobu dash games dot com>",
 	"copyright" : "(c) 2015 Thomas Iguchi",
 	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/tiguchi/tokchi/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/tiguchi/tokchi.git"
+	},
 	"devDependencies": {
     	"grunt": "~0.4.5",
     	"grunt-contrib-jshint": "~0.10.0",
