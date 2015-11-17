@@ -69,7 +69,7 @@
         onCreateToken : function (tokchi, tokenHTMLNode, tokenObj) {
             $(tokenHTMLNode).text(tokenObj.label).append(
                 $('<span>')
-                    .text('⊗')
+                    .text('×')
                     .addClass(tokchi._options.cssClasses['token-close-button'])
                     .click(function () {
                         tokchi.removeToken(tokenHTMLNode);
@@ -142,7 +142,9 @@
         RIGHT : 39,
         RETURN : 13,
         PG_UP : 33,
-        PG_DOWN : 34
+        PG_DOWN : 34,
+        END : 35,
+        HOME : 36
     };
 
     var selection = {
@@ -384,9 +386,9 @@
      */ 
     Tokchi.prototype._pickDropdownItem = function (index) {
         delete this._blurSafeGuard;
-        var serToken = $(this._dropdown.children().get(index)).attr('data-token')
-        if (!serToken) return;
-        var chip = this._createToken(JSON.parse(serToken));
+        var jitem = $(this._dropdown.children().get(index));
+        if (jitem.attr('data-disabled')) return;
+        var chip = this._createToken(JSON.parse(jitem.attr('data-token')));
         
         if (this._currentSearchTokenStartOffset || this._currentSearchTokenEndOffset) {
             var toReplace = this._currentSearchToken.splitText(this._currentSearchTokenStartOffset);
@@ -550,6 +552,13 @@
                 if (this._dropdownShowing) {
                     e.preventDefault();
                     this._hideDropdown();
+                }
+                return;
+
+            case KEY.HOME:
+            case KEY.END:
+                if (e.type == 'keydown') {
+                    this._hideDropdown(true);
                 }
                 return;
                 
