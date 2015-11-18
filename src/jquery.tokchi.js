@@ -322,6 +322,7 @@
         if (!force && this._blurSafeGuard > 0) return;
         this._dropdown.hide();
         this._dropdownShowing = false;
+        delete this._currentSearchKey;
     };
     
     /**
@@ -390,16 +391,16 @@
         if (jitem.attr('data-disabled')) return;
         var chip = this._createToken(JSON.parse(jitem.attr('data-token')));
         
-        if (this._currentSearchTokenStartOffset || this._currentSearchTokenEndOffset) {
-            var toReplace = this._currentSearchToken.splitText(this._currentSearchTokenStartOffset);
-            var offs = this._currentSearchTokenEndOffset - this._currentSearchTokenStartOffset;
+        if (this._currentSearchNodeStartOffset || this._currentSearchNodeEndOffset) {
+            var toReplace = this._currentSearchNode.splitText(this._currentSearchNodeStartOffset);
+            var offs = this._currentSearchNodeEndOffset - this._currentSearchNodeStartOffset;
             if (offs && offs < toReplace.nodeValue.length) toReplace.splitText(offs);
             $(toReplace).replaceWith(chip);
         } else {
-            $(this._currentSearchToken).replaceWith(chip);
+            $(this._currentSearchNode).replaceWith(chip);
         }
 
-        delete this._currentSearchToken;
+        delete this._currentSearchNode;
         this._padAndSetCursorAfterToken(chip);
     };
     
@@ -664,10 +665,10 @@
             var range = selection.get().getRangeAt(0);
             var editedNode = range.startContainer;
 
-            if(editedNode.nodeType == 3 && this._inputNode == editedNode.parentNode) {
+            if (editedNode.nodeType == 3 && this._inputNode == editedNode.parentNode) {
                 if (e.type == 'keydown') return;
                 this._searchToken(range, editedNode);
-            } else if(!this._inputNode == editedNode) {
+            } else if (this._inputNode != editedNode) {
                 // Avoid that label of token gets edited
                 e.preventDefault();
             }
@@ -680,43 +681,46 @@
      * @param token Token text node to search for. Will be automatically
      *      replaced with a token when user makes a selection from the dropdown list.
      */ 
-    Tokchi.prototype._searchToken = function (range, token) {
+    Tokchi.prototype._searchToken = function (range, node) {
         var searchKey;
-
+        
         if (this._options.searchKeywordDelimiter) {
-            this._currentSearchTokenStartOffset = Math.max(range.startOffset - 1, 0);
-            this._currentSearchTokenEndOffset = Math.min(range.endOffset, token.textContent.length);
+            this._currentSearchNodeStartOffset = Math.max(range.startOffset - 1, 0);
+            this._currentSearchNodeEndOffset = Math.min(range.endOffset, node.textContent.length);
 
-            for (; this._currentSearchTokenStartOffset > 0; --this._currentSearchTokenStartOffset) {
-                if (token.textContent.charAt(this._currentSearchTokenStartOffset)
+            for (; this._currentSearchNodeStartOffset > 0; --this._currentSearchNodeStartOffset) {
+                if (node.textContent.charAt(this._currentSearchNodeStartOffset)
                     .match(this._options.searchKeywordDelimiter)) {
                     break;
                 }
             }
             
-            for (; this._currentSearchTokenEndOffset < token.textContent.length; ++this._currentSearchTokenEndOffset) {
-                if (token.textContent.charAt(this._currentSearchTokenEndOffset)
+            for (; this._currentSearchNodeEndOffset < node.textContent.length; ++this._currentSearchNodeEndOffset) {
+                if (node.textContent.charAt(this._currentSearchNodeEndOffset)
                     .match(this._options.searchKeywordDelimiter)) {
                     break;
                 }
             }
 
-            searchKey = token.textContent
-                .substring(this._currentSearchTokenStartOffset, this._currentSearchTokenEndOffset);
+            searchKey = node.textContent
+                .substring(this._currentSearchNodeStartOffset, this._currentSearchNodeEndOffset);
 
             if (this._options.debug) {
-                console.debug('Start = ' + this._currentSearchTokenStartOffset 
-                              + ', End = ' + this._currentSearchTokenEndOffset
+                console.debug('Start = ' + this._currentSearchNodeStartOffset 
+                              + ', End = ' + this._currentSearchNodeEndOffset
                               + ', SearchKey = ' + searchKey);
             }
         } else {
-            delete this._currentSearchTokenStartOffset;
-            delete this._currentSearchTokenEndOffset;       
-            searchKey = token.textContent;
+            delete this._currentSearchNodeStartOffset;
+            delete this._currentSearchNodeEndOffset;       
+            searchKey = node.textContent;
         }
-
-        this._currentSearchToken = token;
-        this._options.onSearchKeyword(this, searchKey.replace('\u00A0', ' ').trim());
+        
+        this._currentSearchNode = node;
+        searchKey = searchKey.replace('\u00A0', ' ').trim();
+        if (this._currentSearchKey == searchKey) return;
+        this._currentSearchKey = searchKey;
+        this._options.onSearchKeyword(this, searchKey);
     };
 
     /**
