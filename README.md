@@ -1,5 +1,5 @@
 # Tokchi
-jQuery plugin that adds MacOS-style tokens or Android-style chips to a text input field, including
+jQuery plugin that adds Mac OS X style tokens or Android style chips to a text input field, including
 an auto-completion dropdown box that shows up as you type.
 
 ![Token example](wiki/token_example_1.png)
@@ -57,7 +57,7 @@ The `tokchify` function accepts an options argument with any of the following pr
 | onCreateDropdownItem | `function(tokchi, itemHTMLNode, resultItem)` | Function that adds the label and optional other content to an auto-completion dropdown list item. |
 | onUnwrapToken | `function(tokchi, tokenHTMLNode, tokenObj)` | Function that returns the token label string in case a token gets "unwrapped" for editing. |
 | onPressReturn | `function(tokchi)` | Called when the return key has been pressed in the input field, while the auto-completion dropdown box is closed. Override this method if you want to act on this event, e.g. send the message from the input field to a server. This function is expected to return a `boolean`. If it returns `true` the enter key press event won't be propagated to the input field, essentially suppressing line breaks in the input. |
-| dropdownElement | `string | DOMNodeElement` | Optional `<ul>` container object for the suggestion dropdown box. Can be a CSS selector string or an actual DOM node element. If not specified, an element will be automatically created and added as a sibling to the search input field. |
+| dropdownElement | `string` or `DOMNodeElement` | Optional `<ul>` container object for the suggestion dropdown box. Can be a CSS selector string or an actual DOM node element. If not specified, an element will be automatically created and added as a sibling to the search input field. |
 | cssClasses | `object` | Contains an internally used map of the following CSS class names: `tokchi-token`, `tokchi-token-close-button`, `tokchi-dropdown`, `tokchi-dropdown-item` and `tokchi-dropdown-item-selected`. |
 | dropdownStyle | `string` |`follows` = dropdown box will open up under current cursor position, `fixed` = dropdown box will appear under input field. |
 | searchKeywordDelimiter | `RegExp` | Optional regular expression for detecting boundaries between keywords to search for. By default this regex covers white-space and western punctuation. If set to `null` only existing token objects act as boundaries. |
@@ -69,26 +69,9 @@ The source file `src/jquery.tokchi.js` contains more detailed documentation for 
 
 | Method | Arguments | Description |
 |--------|-----------|-------------|
-| addToken | `{object} tokenObj` | Programmatically adds a token to the end of the input field. |
-| removeToken | `{DOMElementNode} tokenHTMLNode` | Programmatically removes a token from the input field. |
-| setValue | `string | array` | Sets the input field value. String arguments are used as text value for the field. Array arguments are expected to be sequences of strings and / or token objects (see `getValue` function). If no argument is specified the input field will be cleared. | 
+| setSearchResult | `array` | Callback method for `onSearchKeyword` that sets the auto-completion result set of a token keyword search. The expected argument can be null or an array of `object`s that contain the individual token labels and arbitrary other properties (e.g. an `id` for identifying a token). The default label property is called `label`. |
+| addToken | `object` | Programmatically adds a token to the end of the input field. |
+| removeToken | `DOMElementNode` | Programmatically removes a token DOM element node from the input field, and cleans up the markup of the input field.  |
+| setValue | `string` or `array` | Sets the input field value. String arguments are used as text value for the field. Array arguments are expected to be sequences of strings and / or token objects (see `getValue` function). If no argument is specified the input field will be cleared. | 
 | getTokens | | Returns a list of all token objects that are currently embedded in the input field. |
 | getValue  | | Returns the current input text as an `array` of strings and token `object`s in the order of appearance. HTML formattings will be ignored. Example: `[ 'Hello ', {id : 123, label : '+Ferris'}, '! How are you?' ]` |
-| setSearchResult | `{array} result` | Callback method for `onSearchKeyword` that sets the auto-completion result set of a token keyword search. The expected argument can be null or an array of `object`s that contain the individual token labels and arbitrary other properties (e.g. an `id` for identifying a token). The default label property is called `label`. |
-
-## Is it production ready?
-This plugin is currently under development for a website project and may undergo a couple of fixes
-here and there. I cannot guarantee that it's ready for prime time, yet. For the time being I will only
-try to make it work as good as possible for one specific purpose: recognizing and adding keywords
-to a search page.
-
-There are a few issues, most notably on Android browsers where Android's auto-correction does
-really bizarre things when editing an inserted token. I don't have any idea what the cause may be, so if you
-have an idea how to fix that, send me a pull request, please :-)
-
-Other than that Tokchi seems to be pretty stable on Safari (Mac and iOS), Firefox and Google Chrome,
-with some minor issues, that have to do with editing an existing token.
-
-## How can I contribute?
-Just create your own fork on GitHub, make your changes and create a pull request. I will review your contribution
-as soon as I can. Thanks for your help!
