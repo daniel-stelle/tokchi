@@ -1,5 +1,5 @@
 /**
- * Tokchi v 0.9.1
+ * Tokchi v 1.0
  * 
  * Cross-browser input field with MacOS-style "token" / Android-style "chip"
  * support.
