@@ -129,7 +129,7 @@
          * taken into account, while only previously inserted tokens act
          * as boundaries.
          */ 
-        searchKeywordDelimiter : /[\s\u00A0,.:;\?!\)\(\[\]\{\}"`<>+\-]/
+        searchKeywordDelimiter : /[\s\u00A0,.:;\?!\)\(\[\]\{\}"`<>+]/
     };
     
     var KEY = {
