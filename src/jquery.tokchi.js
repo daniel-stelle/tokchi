@@ -215,6 +215,13 @@
                 self._onInput(e);
             }).blur(function () {
                 self._hideDropdown();
+                self._cleanInputMarkup();
+                
+                // If there's only whitespace left, clear the input field
+                // so the optional hint text can reappear
+                if (self._input.text().trim().length == 0) {
+                    self._input.empty();
+                }
             });
         $.each(input.attributes, function (i, attr) {
             self._input.attr(attr.nodeName, attr.nodeValue);
