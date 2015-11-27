@@ -4,7 +4,7 @@ module.exports = function(grunt) {
 	grunt.initConfig({
 		uglify : {
 			options : {
-				banner : '//! Tokchi ' + pkg.version + ' - ' + pkg.copyright + ', https://github.com/tiguchi/tokchi - MIT license\n',
+				banner : '/*! Tokchi ' + pkg.version + ' - ' + pkg.copyright + ', https://github.com/tiguchi/tokchi - MIT license */\n',
 			},
 			my_target : {
 				files : {

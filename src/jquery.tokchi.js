@@ -1,5 +1,5 @@
 /**
- * Tokchi v 0.9.1
+ * Tokchi v 1.0.1
  * 
  * Cross-browser input field with MacOS-style "token" / Android-style "chip"
  * support.
@@ -69,7 +69,7 @@
         onCreateToken : function (tokchi, tokenHTMLNode, tokenObj) {
             $(tokenHTMLNode).text(tokenObj.label).append(
                 $('<span>')
-                    .text('⊗')
+                    .text('×')
                     .addClass(tokchi._options.cssClasses['token-close-button'])
                     .click(function () {
                         tokchi.removeToken(tokenHTMLNode);
@@ -129,7 +129,7 @@
          * taken into account, while only previously inserted tokens act
          * as boundaries.
          */ 
-        searchKeywordDelimiter : /[\s\u00A0,.:;\?!\)\(\[\]\{\}"`<>+\-]/
+        searchKeywordDelimiter : /[\s\u00A0,.:;\?!\)\(\[\]\{\}"`<>+]/
     };
     
     var KEY = {
@@ -142,7 +142,9 @@
         RIGHT : 39,
         RETURN : 13,
         PG_UP : 33,
-        PG_DOWN : 34
+        PG_DOWN : 34,
+        END : 35,
+        HOME : 36
     };
 
     var selection = {
@@ -213,16 +215,36 @@
                 self._onInput(e);
             }).blur(function () {
                 self._hideDropdown();
+                self._cleanInputMarkup();
+                
+                // If there's only whitespace left, clear the input field
+                // so the optional hint text can reappear
+                if (self._input.text().trim().length == 0) {
+                    self._input.empty();
+                }
             });
         $.each(input.attributes, function (i, attr) {
             self._input.attr(attr.nodeName, attr.nodeValue);
         });
         $(input).replaceWith(this._input);
+
         this._inputNode = this._input.get(0);
         this._options = $.extend({}, defaultOptions, options);
-        this._dropdown = $('<ul/>').addClass(this._options.cssClasses['dropdown']).hide();
-        this._input.after(this._dropdown);
+        this._dropdown = $(this._options.dropdownElement || '<ul/>')
+        	.addClass(this._options.cssClasses['dropdown']).hide();
+
+        if (!this._options.dropdownElement)
+        	this._input.after(this._dropdown);
         
+        var initVal = this._input.attr('data-value');
+        
+        if (initVal) {
+            var optionsBackup = this._options.onChange;
+            this._options.onChange = $.noop;
+            this.setValue(JSON.parse(initVal));
+            this._options.onChange = optionsBackup;
+        }
+
         if (window.MutationObserver) {
             this._mutationObserver = new MutationObserver(function (mutations) {
                 var didChange = false;
@@ -231,13 +253,13 @@
                     if (!mutation.removedNodes) return;
 
                     forEach(mutation.addedNodes, function (index, item) {
-                        if ($(item).attr('_token')) {
+                        if ($(item).attr('data-token')) {
                             didChange = true;
                         }
                     });
 
                     forEach(mutation.removedNodes, function (index, item) {
-                        if ($(item).attr('_token')) {
+                        if ($(item).attr('data-token')) {
                             didChange = true;
                         }
                     });
@@ -271,7 +293,7 @@
                     left : rect.left
                 });
             } else if (this._options.dropdownStyle == 'fixed') {
-                var offset = this._input.offset();
+                var offset = this._input.position();
                 this._dropdown.css({
                     position : 'absolute',
                     top : offset.top + this._input.outerHeight(),
@@ -317,6 +339,7 @@
         if (!force && this._blurSafeGuard > 0) return;
         this._dropdown.hide();
         this._dropdownShowing = false;
+        delete this._currentSearchKey;
     };
     
     /**
@@ -335,6 +358,7 @@
             var jthis = $(this);
             
             if (i == newIndex) {
+                if (jthis.attr('data-disabled')) return;
                 jthis.addClass(self._options.cssClasses["dropdown-item-selected"]);
                 var ddHeight = self._dropdown.outerHeight();
                 var ddTop = self._dropdown.scrollTop();
@@ -366,7 +390,11 @@
         if (child)
             $(child).removeClass(this._options.cssClasses["dropdown-item-selected"]);
 
-        $(this._dropdown.children().get(index)).addClass(this._options.cssClasses["dropdown-item-selected"]);
+        child = $(this._dropdown.children().get(index));
+        
+        if (!child.attr('data-disabled'))
+            child.addClass(this._options.cssClasses["dropdown-item-selected"]);
+
         this._dropdownIndex = index;
     };
     
@@ -376,18 +404,20 @@
      */ 
     Tokchi.prototype._pickDropdownItem = function (index) {
         delete this._blurSafeGuard;
-        var chip = this._createToken(JSON.parse($(this._dropdown.children().get(index)).attr('_token')));
+        var jitem = $(this._dropdown.children().get(index));
+        if (jitem.attr('data-disabled')) return;
+        var chip = this._createToken(JSON.parse(jitem.attr('data-token')));
         
-        if (this._currentSearchTokenStartOffset || this._currentSearchTokenEndOffset) {
-            var toReplace = this._currentSearchToken.splitText(this._currentSearchTokenStartOffset);
-            var offs = this._currentSearchTokenEndOffset - this._currentSearchTokenStartOffset;
+        if (this._currentSearchNodeStartOffset || this._currentSearchNodeEndOffset) {
+            var toReplace = this._currentSearchNode.splitText(this._currentSearchNodeStartOffset);
+            var offs = this._currentSearchNodeEndOffset - this._currentSearchNodeStartOffset;
             if (offs && offs < toReplace.nodeValue.length) toReplace.splitText(offs);
             $(toReplace).replaceWith(chip);
         } else {
-            $(this._currentSearchToken).replaceWith(chip);
+            $(this._currentSearchNode).replaceWith(chip);
         }
 
-        delete this._currentSearchToken;
+        delete this._currentSearchNode;
         this._padAndSetCursorAfterToken(chip);
     };
     
@@ -417,9 +447,9 @@
     Tokchi.prototype._repairPastedTokens = function () {
         var self = this;
 
-        $('*[_token]', this._inputNode).each(function (i, token) {
+        $('*[data-token]', this._inputNode).each(function (i, token) {
             var jtoken = $(token);
-            var tokenObj = JSON.parse(jtoken.attr('_token'));
+            var tokenObj = JSON.parse(jtoken.attr('data-token'));
             jtoken.replaceWith(self._createToken(tokenObj));
         });
 
@@ -430,14 +460,14 @@
      * Creates a token / chip based on a description object.
      *
      * @param tokenObj Token description object (will be automatically
-     *      serialized as JSON string and added as `_token` attribute).
+     *      serialized as JSON string and added as `data-token` attribute).
      * @return Created token DOM object.
      */ 
     Tokchi.prototype._createToken = function (tokenObj) {
         var self = this;
 
         var chip = $('<div/>')
-            .attr('_token', JSON.stringify(tokenObj))
+            .attr('data-token', JSON.stringify(tokenObj))
             .attr('contentEditable', false)
             .addClass(this._options.cssClasses.token)
             .each(function (i, token) {
@@ -478,7 +508,7 @@
 
         do {
             var jeditedNode = $(editedNode);
-            var tokenObj = jeditedNode.attr('_token');
+            var tokenObj = jeditedNode.attr('data-token');
             if (tokenObj) return jeditedNode;
             editedNode = (ltr ? editedNode.nextSibling : editedNode.previousSibling) || editedNode.parentNode;
         } while (editedNode && this._inputNode != editedNode 
@@ -493,14 +523,14 @@
     Tokchi.prototype._cleanInputMarkup = function () {
         var self = this;
 
-        $('> *:not([_token])', this._input).each(function (i, node) {
+        $('> *:not([data-token])', this._input).each(function (i, node) {
             if (node.nodeType != 3) {
                 var jnode = $(node);
                 jnode.replaceWith(jnode.text() || '\u00A0');
             }
         });
         
-        $('*[_token]', this._input).each(function (i, node) {
+        $('*[data-token]', this._input).each(function (i, node) {
             if (i == 0 && (!node.previousSibling || node.previousSibling.nodeType != 3)) {
                 $(node).before(document.createTextNode('\u00A0'));
             }
@@ -542,6 +572,13 @@
                     this._hideDropdown();
                 }
                 return;
+
+            case KEY.HOME:
+            case KEY.END:
+                if (e.type == 'keydown') {
+                    this._hideDropdown(true);
+                }
+                return;
                 
             case KEY.LEFT:
                 if (e.type == 'keydown') {
@@ -571,7 +608,7 @@
                     var token = this._getClosestToken(true);
 
                     if (token) {
-                        tokenObj = JSON.parse(token.attr('_token'));
+                        tokenObj = JSON.parse(token.attr('data-token'));
                         var label = document.createTextNode(this._options.onUnwrapToken(this, token, tokenObj));
                         token.replaceWith(label);
                         e.preventDefault();
@@ -586,7 +623,7 @@
                     var token = this._getClosestToken(false);
 
                     if (token) {
-                        tokenObj = JSON.parse(token.attr('_token'));
+                        tokenObj = JSON.parse(token.attr('data-token'));
                         var label = document.createTextNode(this._options.onUnwrapToken(this, token, tokenObj));
                         var next = token.get(0).nextSibling;
                         token.replaceWith(label);
@@ -645,10 +682,10 @@
             var range = selection.get().getRangeAt(0);
             var editedNode = range.startContainer;
 
-            if(editedNode.nodeType == 3 && this._inputNode == editedNode.parentNode) {
+            if (editedNode.nodeType == 3 && this._inputNode == editedNode.parentNode) {
                 if (e.type == 'keydown') return;
                 this._searchToken(range, editedNode);
-            } else if(!this._inputNode == editedNode) {
+            } else if (this._inputNode != editedNode) {
                 // Avoid that label of token gets edited
                 e.preventDefault();
             }
@@ -661,43 +698,46 @@
      * @param token Token text node to search for. Will be automatically
      *      replaced with a token when user makes a selection from the dropdown list.
      */ 
-    Tokchi.prototype._searchToken = function (range, token) {
+    Tokchi.prototype._searchToken = function (range, node) {
         var searchKey;
-
+        
         if (this._options.searchKeywordDelimiter) {
-            this._currentSearchTokenStartOffset = Math.max(range.startOffset - 1, 0);
-            this._currentSearchTokenEndOffset = Math.min(range.endOffset, token.textContent.length);
+            this._currentSearchNodeStartOffset = Math.max(range.startOffset - 1, 0);
+            this._currentSearchNodeEndOffset = Math.min(range.endOffset, node.textContent.length);
 
-            for (; this._currentSearchTokenStartOffset > 0; --this._currentSearchTokenStartOffset) {
-                if (token.textContent.charAt(this._currentSearchTokenStartOffset)
+            for (; this._currentSearchNodeStartOffset > 0; --this._currentSearchNodeStartOffset) {
+                if (node.textContent.charAt(this._currentSearchNodeStartOffset)
                     .match(this._options.searchKeywordDelimiter)) {
                     break;
                 }
             }
             
-            for (; this._currentSearchTokenEndOffset < token.textContent.length; ++this._currentSearchTokenEndOffset) {
-                if (token.textContent.charAt(this._currentSearchTokenEndOffset)
+            for (; this._currentSearchNodeEndOffset < node.textContent.length; ++this._currentSearchNodeEndOffset) {
+                if (node.textContent.charAt(this._currentSearchNodeEndOffset)
                     .match(this._options.searchKeywordDelimiter)) {
                     break;
                 }
             }
 
-            searchKey = token.textContent
-                .substring(this._currentSearchTokenStartOffset, this._currentSearchTokenEndOffset);
+            searchKey = node.textContent
+                .substring(this._currentSearchNodeStartOffset, this._currentSearchNodeEndOffset);
 
             if (this._options.debug) {
-                console.debug('Start = ' + this._currentSearchTokenStartOffset 
-                              + ', End = ' + this._currentSearchTokenEndOffset
+                console.debug('Start = ' + this._currentSearchNodeStartOffset 
+                              + ', End = ' + this._currentSearchNodeEndOffset
                               + ', SearchKey = ' + searchKey);
             }
         } else {
-            delete this._currentSearchTokenStartOffset;
-            delete this._currentSearchTokenEndOffset;       
-            searchKey = token.textContent;
+            delete this._currentSearchNodeStartOffset;
+            delete this._currentSearchNodeEndOffset;       
+            searchKey = node.textContent;
         }
-
-        this._currentSearchToken = token;
-        this._options.onSearchKeyword(this, searchKey.replace('\u00A0', ' ').trim());
+        
+        this._currentSearchNode = node;
+        searchKey = searchKey.replace('\u00A0', ' ').trim();
+        if (this._currentSearchKey == searchKey) return;
+        this._currentSearchKey = searchKey;
+        this._options.onSearchKeyword(this, searchKey);
     };
 
     /**
@@ -761,16 +801,20 @@
                 })
                 .mouseover(function () {
                     self._blurSafeGuard++;
-                    self._setDropdownSelection(i);    
+                    self._setDropdownSelection(i);
                 })
                 .mouseout(function () {
                     self._blurSafeGuard--;
                 })
                 .click(function () {
                     self._pickDropdownItem(i);
-                }).attr('_token', JSON.stringify(item));
+                }).attr('data-token', JSON.stringify(item));
+            
+            if (item.disabled)
+                ddItem.attr('data-disabled', true);
             self._options.onCreateDropdownItem(self, ddItem, item);
-            if(i == 0) ddItem.addClass(self._options.cssClasses["dropdown-item-selected"]);
+            if(!item.disabled && i == 0)
+                ddItem.addClass(self._options.cssClasses["dropdown-item-selected"]);
             dd.append(ddItem);
             
             if (!itemHeight) {
@@ -783,6 +827,31 @@
     };
     
     /**
+     * Sets the value of the input field.
+     * 
+     * @param value Optional string or an array of strings and / or token objects (see getValue).
+     * 		  May also be null to clear the input field.
+     */
+    Tokchi.prototype.setValue = function (value) {
+        if (typeof value == 'string') {
+            this._input.text(value);
+            return;
+        }
+
+        this._input.empty();
+        if (!value) return;
+        var self = this;
+
+        forEach(value, function (index, item) {
+            if (typeof item == 'string') {
+                self._input.append(document.createTextNode(item));
+            } else {
+                self.addToken(item);
+            }
+        });
+    };
+
+    /**
      * Gets a list of all token objects from the input field.
      * 
      * @return array of token objects.
@@ -790,8 +859,8 @@
     Tokchi.prototype.getTokens = function () {
         var result = [];
         
-        $('*[_token]', this._inputNode).each(function (index, token) {
-            result.push(JSON.parse($(token).attr('_token')));
+        $('*[data-token]', this._inputNode).each(function (index, token) {
+            result.push(JSON.parse($(token).attr('data-token')));
         });
         
         return result;
@@ -810,7 +879,7 @@
 
         forEach(this._inputNode.childNodes, function (index, node) {
             var jnode = $(node);
-            var token = jnode.attr('_token');
+            var token = jnode.attr('data-token');
 
             if (token) {
                 result.push(JSON.parse(token));
