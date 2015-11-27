@@ -75,3 +75,8 @@ The source file `src/jquery.tokchi.js` contains more detailed documentation for 
 | setValue | `string` or `array` | Sets the input field value. String arguments are used as text value for the field. Array arguments are expected to be sequences of strings and / or token objects (see `getValue` function). If no argument is specified the input field will be cleared. | 
 | getTokens | | Returns a list of all token objects that are currently embedded in the input field. |
 | getValue  | | Returns the current input text as an `array` of strings and token `object`s in the order of appearance. HTML formattings will be ignored. Example: `[ 'Hello ', {id : 123, label : '+Ferris'}, '! How are you?' ]` |
+
+### Input Field Attributes
+The Tokchi input field element can have the optional attribute `data-value` that provides a JSON array
+which serves as the initial input field value. Please read the documentation for `getValue` and `setValue`
+in order to learn about the expected contents of that array.
