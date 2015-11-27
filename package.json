@@ -1,6 +1,6 @@
 {
 	"name": "Tokchi",
-	"version": "1.0",
+	"version": "1.0.1",
 	"description": "jQuery plugin that adds Mac OS X style tokens or Android style chips to a text input field",
 	"author": "Thomas Iguchi <ti at nobu dash games dot com>",
 	"copyright" : "(c) 2015 Thomas Iguchi",
