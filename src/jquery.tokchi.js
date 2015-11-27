@@ -227,6 +227,7 @@
             self._input.attr(attr.nodeName, attr.nodeValue);
         });
         $(input).replaceWith(this._input);
+
         this._inputNode = this._input.get(0);
         this._options = $.extend({}, defaultOptions, options);
         this._dropdown = $(this._options.dropdownElement || '<ul/>')
@@ -235,6 +236,15 @@
         if (!this._options.dropdownElement)
         	this._input.after(this._dropdown);
         
+        var initVal = this._input.attr('data-value');
+        
+        if (initVal) {
+            var optionsBackup = this._options.onChange;
+            this._options.onChange = $.noop;
+            this.setValue(JSON.parse(initVal));
+            this._options.onChange = optionsBackup;
+        }
+
         if (window.MutationObserver) {
             this._mutationObserver = new MutationObserver(function (mutations) {
                 var didChange = false;
