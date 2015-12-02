@@ -1,10 +1,11 @@
+<html>
 <head>
     <title>Tokchi Keywords Demo</title>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="keywords.css">
     <script type="text/javascript" src="http://cdn.jsdelivr.net/jquery/3.0.0-alpha1/jquery.min.js"></script>
-    <script type="application/javascript" src="https://cdn.rawgit.com/tiguchi/tokchi/0.9.1/src/jquery.tokchi.js"></script>
+    <script type="application/javascript" src="https://cdn.rawgit.com/tiguchi/tokchi/1.0.1/src/jquery.tokchi.js"></script>
     <script type="application/javascript">
         $(document).ready(function() {
             $.getJSON('https://cdn.rawgit.com/adambom/dictionary/master/dictionary.json', function(data) {
@@ -91,4 +92,15 @@
         <input id="follows" type="radio" name="dd-type" value="follows" checked="checked" onchange="setDDStyle(this.value)" /><label for="follows">follows</label>
     <h2 id="pw">Loading dictionary... please wait...</h2>
     <div id="selection" style="margin-top:50px"></div>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-70928061-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
 </body>
+</html>
