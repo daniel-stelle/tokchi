@@ -2,9 +2,27 @@
 	"name": "Tokchi",
 	"version": "1.0.1",
 	"description": "jQuery plugin that adds Mac OS X style tokens or Android style chips to a text input field",
-	"author": "Thomas Iguchi <ti at nobu dash games dot com>",
+	"keywords": [
+		"jquery-plugin",
+		"ecosystem:jquery",
+	    "ui",
+	    "editor",
+	    "input",
+	    "token-input",
+	    "token",
+	    "chip",
+	    "autocomplete"
+	],
+	"author": {
+		"name": "Thomas Iguchi",
+		"url": "https://github.com/tiguchi"
+	},
 	"copyright" : "(c) 2015 Thomas Iguchi",
 	"license": "MIT",
+	"homepage": "http://tiguchi.github.io/tokchi",
+	"dependencies" : {
+		"jquery": ">=1.7"
+	},
 	"bugs": {
 		"url": "https://github.com/tiguchi/tokchi/issues"
 	},
