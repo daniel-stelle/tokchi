@@ -1,0 +1,41 @@
+{
+  "name": "tokchi",
+  "title": "Tokchi",
+  "description": "A jQuery plugin that brings Mac OS X style tokens to your web input fields",
+  "keywords": [
+    "jquery-plugins",
+    "token-input",
+    "token",
+    "tokens",
+    "chip-input",
+    "chip",
+    "chips",
+    "Android",
+    "Max OS X",
+    "autocomplete"
+  ],
+  "version": "1.0.1",
+  "author": {
+    "name": "Thomas Iguchi",
+    "url": "https://github.com/tiguchi"
+  },
+  "maintainers": [
+    {
+      "name": "Thomas Iguchi",
+      "url": "https://github.com/tiguchi"
+    }
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/tiguchi/tokchi/blob/master/LICENSE.md"
+    }
+  ],
+  "bugs": "https://github.com/tiguchi/tokchi/issues",
+  "homepage": "http://tiguchi.github.io/tokchi",
+  "docs": "https://github.com/tiguchi/tokchi/blob/master/README.md",
+  "download": "https://github.com/tiguchi/tokchi/archive/master.zip",
+  "dependencies": {
+    "jquery": ">=1.7"
+  }
+}

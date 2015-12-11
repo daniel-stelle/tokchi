@@ -18,7 +18,7 @@ Just take a look at `demo/email.html`.
 
 ### Online Communities: @/+User Name
 Similar to Google+ or Facebook auto-completion, Tokchi could also be used for dynamic message input fields in
-order to select and highlight the name of a community user you want to include in a message.
+order to select and highlight the name of a community member you want to include in a message.
 
 ## Usage
 This plugin adds a new jQuery function called `tokchify` that accepts an options parameter:
@@ -79,4 +79,4 @@ The source file `src/jquery.tokchi.js` contains more detailed documentation for 
 ### Input Field Attributes
 The Tokchi input field element can have the optional attribute `data-value` that provides a JSON array
 which serves as the initial input field value. Please read the documentation for `getValue` and `setValue`
-in order to learn about the expected contents of that array.
+in order to learn about the expected content of that array.
