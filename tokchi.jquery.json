@@ -4,14 +4,13 @@
   "description": "A jQuery plugin that brings Mac OS X style tokens to your web input fields",
   "keywords": [
     "jquery-plugins",
+    "editor",
     "token-input",
     "token",
-    "tokens",
-    "chip-input",
+    "input",
+    "ui",
     "chip",
     "chips",
-    "Android",
-    "Max OS X",
     "autocomplete"
   ],
   "version": "1.0.1",
