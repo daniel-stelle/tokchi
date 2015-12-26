@@ -894,8 +894,38 @@
     
     // Register new jQuery function
     $.fn.tokchify = function (options) {
-        return this.each(function () {
-            new Tokchi(this, options);
+        var func, args, result;
+        var first = true;
+
+        if (typeof options == 'string') {
+            func = Tokchi.prototype[options];
+            if (options[0] === '_' || typeof func != 'function')
+                throw 'Unknown method ' + options;
+            args = Array.prototype.slice.call(arguments, 1);
+        }
+        
+        this.each(function () {
+            var $this = $(this);
+            var tokchi = $this.data('tokchi');
+
+            if (!tokchi) {
+                tokchi = new Tokchi(this, options);
+                // Tokchi replaces the original DOM node, that's why we
+                // need to store the instance there
+                tokchi._input.data('tokchi', tokchi);
+                // In case the tokchify method has been chained with
+                // another tokchify call we also need to store the instance
+                // as data for the original (replaced) DOM elements
+                $this.data('tokchi', tokchi);
+            }
+            
+            if (func) {
+                var tmpResult = func.apply(tokchi, args);
+                if (first) result = tmpResult;
+                first = false;
+            }
         });
+
+        return func ? result : this;
     };
 }(jQuery));

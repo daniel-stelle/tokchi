@@ -62,59 +62,59 @@
 
                         list.push(contact);
                     }
+                
+	                // Common Tokchi options object used for contact auto-completion
+	                var options = {
+	                    autoFocus : false,
+	                    searchKeywordDelimiter : null,
+	
+	                    onSearchKeyword : function (tokchi, keyword) {
+	                        keyword = keyword.toLocaleLowerCase();
+	                        var letter = keyword.charAt(0);
+	                        var list = contacts[letter];
+	                        
+	                        if (list) {
+	                            var result = [];
+	                            
+	                            for (var i = 0; i < list.length; ++i) {
+	                                var contact = list[i];
+	                                
+	                                if (contact.label.toLocaleLowerCase().indexOf(keyword) > -1) {
+	                                    result.push(contact);
+	                                }
+	                            }
+	                            
+	                            result.sort(function (a, b) {
+	                                return a.label.localeCompare(b.label);
+	                            });
+	
+	                            tokchi.setSearchResult(result);
+	                        } else {
+	                            tokchi.setSearchResult(null);
+	                        }
+	                    },
+	                    
+	                    onCreateToken : function (tokchi, tokenHTMLNode, tokenObj) {
+	                        $(tokenHTMLNode).text(tokenObj.email).append(
+	                            $('<span>')
+	                                .text('﹀')
+	                                .addClass('token-arrow')
+	                                .click(function () {
+	                                    alert('This could be a context menu');
+	                                })
+	                        );
+	                    },
+	
+	                    onCreateDropdownItem : function (tokchi, itemHTMLNode, resultItem) {
+	                        $(itemHTMLNode).text(resultItem.label + '—' + resultItem.email);
+	                    },
+	                };
+	                
+	                // Set up input fields for email auto-completion
+	                $('#cc, #from').tokchify(options);
+	                options.autoFocus = true;
+	                $('#to').tokchify(options);
                 }
-                
-                // Common Tokchi options object used for contact auto-completion
-                var options = {
-                    autoFocus : false,
-                    searchKeywordDelimiter : null,
-
-                    onSearchKeyword : function (tokchi, keyword) {
-                        keyword = keyword.toLocaleLowerCase();
-                        var letter = keyword.charAt(0);
-                        var list = contacts[letter];
-                        
-                        if (list) {
-                            var result = [];
-                            
-                            for (var i = 0; i < list.length; ++i) {
-                                var contact = list[i];
-                                
-                                if (contact.label.toLocaleLowerCase().indexOf(keyword) > -1) {
-                                    result.push(contact);
-                                }
-                            }
-                            
-                            result.sort(function (a, b) {
-                                return a.label.localeCompare(b.label);
-                            });
-
-                            tokchi.setSearchResult(result);
-                        } else {
-                            tokchi.setSearchResult(null);
-                        }
-                    },
-                    
-                    onCreateToken : function (tokchi, tokenHTMLNode, tokenObj) {
-                        $(tokenHTMLNode).text(tokenObj.email).append(
-                            $('<span>')
-                                .text('﹀')
-                                .addClass('token-arrow')
-                                .click(function () {
-                                    alert('This could be a context menu');
-                                })
-                        );
-                    },
-
-                    onCreateDropdownItem : function (tokchi, itemHTMLNode, resultItem) {
-                        $(itemHTMLNode).text(resultItem.label + '—' + resultItem.email);
-                    },
-                };
-                
-                // Set up input fields for email auto-completion
-                $('#cc, #from').tokchify(options);
-                options.autoFocus = true;
-                $('#to').tokchify(options);
             }
 
             $.getJSON('https://cdn.rawgit.com/dtudury/random-person/master/etc/female.first.json', function (data) {
