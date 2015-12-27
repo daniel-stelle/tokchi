@@ -30,6 +30,17 @@
         },
         
         /**
+         * Callback for text editing event (key up / key down / key press).
+         * 
+         * @param tokchi Tokchi instance.
+         * @param event Key event.
+         * @return If <code>false</code> is returned the event will be
+         *     suppressed and the typed character is ignored.
+         */
+        onEdit : function (tokchi, event) {
+        },
+        
+        /**
          * Callback for return button press.
          * 
          * @param tokchi Tokchi instance.
@@ -198,6 +209,28 @@
         }
     }
     
+    function calculatePosition (el) {
+        console.debug(el);
+        var pos = {
+            top : 0,
+            left : 0
+        };
+
+        do {
+            $el = $(el);
+            pos.top += el.offsetTop + parseInt($el.css('margin-top'))
+                + parseInt($el.css('padding-top'))
+                + parseInt($el.css('border-top-width'));
+            pos.left += el.offsetLeft + parseInt($el.css('margin-left'))
+                + parseInt($el.css('padding-left'))
+                + parseInt($el.css('border-left-width'));
+        } while (el = el.offsetParent);
+        
+        return pos;
+    }
+    
+    var $window = $(window);
+
     /**
      * Creates a new Tokchi UI widget.
      * 
@@ -289,8 +322,8 @@
                 this._dropdown.css({
                     position : 'absolute',
                     width : '',
-                    top : rect.top + $(window).scrollTop() + rect.height,
-                    left : rect.left
+                    top : rect.bottom + $window.scrollTop(),
+                    left : rect.left + $window.scrollLeft()
                 });
             } else if (this._options.dropdownStyle == 'fixed') {
                 var offset = this._input.position();
@@ -579,7 +612,7 @@
                     this._hideDropdown(true);
                 }
                 return;
-                
+
             case KEY.LEFT:
                 if (e.type == 'keydown') {
                     this._hideDropdown(true);
@@ -679,6 +712,11 @@
             this._hideDropdown();
         } else {
             // User is currently typing something into the input field
+            if (this._options.onEdit(this, e) === false) {
+                e.preventDefault();
+                return;
+            }
+            
             var range = selection.get().getRangeAt(0);
             var editedNode = range.startContainer;
 
