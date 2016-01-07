@@ -777,6 +777,16 @@
         this._currentSearchKey = searchKey;
         this._options.onSearchKeyword(this, searchKey);
     };
+    
+    /**
+     * Gives focus to the tokchi input field and positions the cursor
+     * at the end.
+     */
+    Tokchi.prototype.focus = function () {
+        this._input.focus();
+        var last = this._input.children().last();
+        selection.setRangeAfter(last);
+    };
 
     /**
      * Programmatically adds a token to the input field.
