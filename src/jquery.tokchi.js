@@ -89,6 +89,15 @@
         },
         
         /**
+         * Called when a token has been added to the input field.
+         * 
+         * @param tokchi Tokchi instance.
+         * @param tokenObj Token data object from search result.
+         */
+        onTokenAdded : function (tokchi, tokenObj) {  
+        },
+        
+        /**
          * Handler that get called when a token is edited and needs to be reverted into
          * its text representation. This function is responsible for providing the text
          * representation of the token.
@@ -439,7 +448,8 @@
         delete this._blurSafeGuard;
         var jitem = $(this._dropdown.children().get(index));
         if (jitem.attr('data-disabled')) return;
-        var chip = this._createToken(JSON.parse(jitem.attr('data-token')));
+        var tokenObj = JSON.parse(jitem.attr('data-token'));
+        var chip = this._createToken(tokenObj);
         
         if (this._currentSearchNodeStartOffset || this._currentSearchNodeEndOffset) {
             var toReplace = this._currentSearchNode.splitText(this._currentSearchNodeStartOffset);
@@ -452,21 +462,26 @@
 
         delete this._currentSearchNode;
         this._padAndSetCursorAfterToken(chip);
+        this._options.onTokenAdded(this, tokenObj);
     };
     
     /**
      * Adds whitespace after an inserted token / chip and sets the
-     * input cursor after that.
+     * input cursor after that if the input has currently focus.
      * 
      * @param {DOMNodeElement} chip Token / chip that was inserted.
      */ 
     Tokchi.prototype._padAndSetCursorAfterToken = function (chip) {
         var space = document.createTextNode('\u00A0');
         chip.after(space);
-        this._input.focus();
-        selection.setRangeAfter(space);
+        
+        if (this._dropdownShowing) {
+            this._input.focus();
+            selection.setRangeAfter(space);
+            this._hideDropdown();
+        }
+
         this._cleanInputMarkup();
-        this._hideDropdown();
 
         if (!this._mutationObserver) {
             this._options.onChange(this);
@@ -801,6 +816,8 @@
         if (!this._mutationObserver) {
             this._options.onChange(this);
         }
+
+        this._options.onTokenAdded(this, tokenObj);
     };
     
     /**
