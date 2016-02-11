@@ -2,6 +2,7 @@
     <title>Tokchi Keywords Demo</title>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="../css/tokchi.css">
     <link rel="stylesheet" type="text/css" href="keywords.css">
     <script type="text/javascript" src="http://cdn.jsdelivr.net/jquery/3.0.0-alpha1/jquery.min.js"></script>
     <script type="application/javascript" src="../src/jquery.tokchi.js"></script>
@@ -85,7 +86,9 @@
 <body>
     <h1>Tokchi Keywords Demo</h1>
     <label for="search">Search </label>
-    <div class="search" id="search"></div>
+    <div style="position:relative">
+    	<div class="search" id="search"></div>
+    </div>
     <label>Dropdown </label>
         <input id="fixed" type="radio" name="dd-type" value="fixed" onchange="setDDStyle(this.value)" /><label for="fixed">fixed</label>
         <input id="follows" type="radio" name="dd-type" value="follows" checked="checked" onchange="setDDStyle(this.value)" /><label for="follows">follows</label>

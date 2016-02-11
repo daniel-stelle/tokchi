@@ -326,19 +326,21 @@
      */ 
     Tokchi.prototype._showDropdown = function () {
         if (!this._dropdownShowing) {            
+            var offset = this._input.position();
+            var top = offset.top + this._input.outerHeight();
+            
             if (this._options.dropdownStyle == 'follows') {
                 var rect = selection.get().getRangeAt(0).getClientRects()[0];
                 this._dropdown.css({
                     position : 'absolute',
                     width : '',
-                    top : rect.bottom + $window.scrollTop(),
+                    top : top,
                     left : rect.left + $window.scrollLeft()
                 });
             } else if (this._options.dropdownStyle == 'fixed') {
-                var offset = this._input.position();
                 this._dropdown.css({
                     position : 'absolute',
-                    top : offset.top + this._input.outerHeight(),
+                    top : top,
                     left : offset.left,
                     width : this._input.width()
                 });
@@ -406,12 +408,12 @@
                 var ddPaddingTop = parseInt(self._dropdown.css('padding-top'));
                 var ddTop = self._dropdown.scrollTop();
                 var ddBottom = ddHeight + ddTop;
-                var elTop = jthis.position().top + ddTop;
+                var elTop = jthis.position().top;
                 var elHeight = jthis.outerHeight(true);
 
                 if (ddBottom < elTop + elHeight) {
                     self._dropdown.scrollTop(elTop - ddHeight + elHeight + ddPaddingTop);
-                } else if(ddTop > elTop) {
+                } else if (ddTop > elTop) {
                     self._dropdown.scrollTop(elTop - ddPaddingTop);
                 }
             } else {
