@@ -44,6 +44,8 @@ One more thing you need to do is define a couple of CSS classes:
 - `tokchi-dropdown-item` is the class that styles an auto-completion suggestion list item
 - `tokchi-dropdown-item-selected` is added to the currently selected auto-completion suggestion list item
 
+You can also take a shortcut and just use the provided CSS file `css/tokchi.css`.
+
 ### Initialization Options
 The `tokchify` function accepts an options argument with any of the following properties:
 
@@ -53,10 +55,12 @@ The `tokchify` function accepts an options argument with any of the following pr
 | onReady | `function(tokchi)` | Called when Tokchi object is ready. See [methods section](#methods) below for available Tokchi methods. |
 | onSearchKeyword | `function(tokchi, keyword)` | Keyword search handler function. Must call `tokchi.setSearchResult(result)` when search result is available. |
 | onChange | `function(tokchi)` | Called when the user has added or removed one or more tokens from the input field. |
+| onEdit | `function(tokchi, event)` | Callback for text editing events (key down, key up, key press). If this function returns false the event will be suppressed and the typed character is ignored. |
 | onCreateToken | `function(tokchi, tokenHTMLNode, tokenObj)` | Function that adds the label and optional other content to a new token. |
 | onCreateDropdownItem | `function(tokchi, itemHTMLNode, resultItem)` | Function that adds the label and optional other content to an auto-completion dropdown list item. |
 | onUnwrapToken | `function(tokchi, tokenHTMLNode, tokenObj)` | Function that returns the token label string in case a token gets "unwrapped" for editing. |
 | onPressReturn | `function(tokchi)` | Called when the return key has been pressed in the input field, while the auto-completion dropdown box is closed. Override this method if you want to act on this event, e.g. send the message from the input field to a server. This function is expected to return a `boolean`. If it returns `true` the enter key press event won't be propagated to the input field, essentially suppressing line breaks in the input. |
+| onTokenAdded | `function(tokchi, tokenObj)` | Event handler function that is ontified about added tokens. |
 | dropdownElement | `string` or `DOMNodeElement` | Optional `<ul>` container object for the suggestion dropdown box. Can be a CSS selector string or an actual DOM node element. If not specified, an element will be automatically created and added as a sibling to the search input field. |
 | cssClasses | `object` | Contains an internally used map of the following CSS class names: `tokchi-token`, `tokchi-token-close-button`, `tokchi-dropdown`, `tokchi-dropdown-item` and `tokchi-dropdown-item-selected`. |
 | dropdownStyle | `string` |`follows` = dropdown box will open up under current cursor position, `fixed` = dropdown box will appear under input field. |
@@ -65,6 +69,13 @@ The `tokchify` function accepts an options argument with any of the following pr
 The source file `src/jquery.tokchi.js` contains more detailed documentation for each option (see `defaultOptions` object).
 
 ### Tokchi Object Methods
+The Tokchi object is usually exposed to even handlers such as `onCreateToken` (see above).
+You can also call methods via jQuery, e.g.:
+
+```
+var value = $('.tokchi-input').tokchify('getValue');
+```
+
 <a name="methods"></a>
 
 | Method | Arguments | Description |

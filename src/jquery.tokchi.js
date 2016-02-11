@@ -1,10 +1,10 @@
 /**
- * Tokchi v 1.0.1
+ * Tokchi v 1.1.0
  * 
  * Cross-browser input field with MacOS-style "token" / Android-style "chip"
  * support.
  *
- * Copyright (c) 2015 Thomas Iguchi - https://nobu-games.com/
+ * Copyright (c) 2015, 2016 Thomas Iguchi - https://nobu-games.com/
  * Licensed under MIT, see https://github.com/tiguchi/tokchi/LICENSE.md
  */ 
 (function ($) {
@@ -27,6 +27,17 @@
          * @param tokchi Tokchi instance.
          */ 
         onChange : function (tokchi) {
+        },
+        
+        /**
+         * Callback for text editing event (key up / key down / key press).
+         * 
+         * @param tokchi Tokchi instance.
+         * @param event Key event.
+         * @return If <code>false</code> is returned the event will be
+         *     suppressed and the typed character is ignored.
+         */
+        onEdit : function (tokchi, event) {
         },
         
         /**
@@ -75,6 +86,15 @@
                         tokchi.removeToken(tokenHTMLNode);
                     })
             );
+        },
+        
+        /**
+         * Called when a token has been added to the input field.
+         * 
+         * @param tokchi Tokchi instance.
+         * @param tokenObj Token data object from search result.
+         */
+        onTokenAdded : function (tokchi, tokenObj) {  
         },
         
         /**
@@ -198,6 +218,28 @@
         }
     }
     
+    function calculatePosition (el) {
+        console.debug(el);
+        var pos = {
+            top : 0,
+            left : 0
+        };
+
+        do {
+            $el = $(el);
+            pos.top += el.offsetTop + parseInt($el.css('margin-top'))
+                + parseInt($el.css('padding-top'))
+                + parseInt($el.css('border-top-width'));
+            pos.left += el.offsetLeft + parseInt($el.css('margin-left'))
+                + parseInt($el.css('padding-left'))
+                + parseInt($el.css('border-left-width'));
+        } while (el = el.offsetParent);
+        
+        return pos;
+    }
+    
+    var $window = $(window);
+
     /**
      * Creates a new Tokchi UI widget.
      * 
@@ -284,19 +326,21 @@
      */ 
     Tokchi.prototype._showDropdown = function () {
         if (!this._dropdownShowing) {            
+            var offset = this._input.position();
+            var top = offset.top + this._input.outerHeight();
+            
             if (this._options.dropdownStyle == 'follows') {
                 var rect = selection.get().getRangeAt(0).getClientRects()[0];
                 this._dropdown.css({
                     position : 'absolute',
                     width : '',
-                    top : rect.top + $(window).scrollTop() + rect.height,
-                    left : rect.left
+                    top : top,
+                    left : rect.left + $window.scrollLeft()
                 });
             } else if (this._options.dropdownStyle == 'fixed') {
-                var offset = this._input.position();
                 this._dropdown.css({
                     position : 'absolute',
-                    top : offset.top + this._input.outerHeight(),
+                    top : top,
                     left : offset.left,
                     width : this._input.width()
                 });
@@ -359,17 +403,18 @@
             
             if (i == newIndex) {
                 if (jthis.attr('data-disabled')) return;
-                jthis.addClass(self._options.cssClasses["dropdown-item-selected"]);
-                var ddHeight = self._dropdown.outerHeight();
+                jthis.addClass(self._options.cssClasses["dropdown-item-selected"]);                
+                var ddHeight = self._dropdown.outerHeight(false);
+                var ddPaddingTop = parseInt(self._dropdown.css('padding-top'));
                 var ddTop = self._dropdown.scrollTop();
                 var ddBottom = ddHeight + ddTop;
                 var elTop = jthis.position().top;
-                var elHeight = jthis.outerHeight();
-                
-                if (ddBottom < elTop) {
-                    self._dropdown.scrollTop(elTop - ddHeight + elHeight);
-                } else if(ddTop > elTop) {
-                    self._dropdown.scrollTop(elTop);
+                var elHeight = jthis.outerHeight(true);
+
+                if (ddBottom < elTop + elHeight) {
+                    self._dropdown.scrollTop(elTop - ddHeight + elHeight + ddPaddingTop);
+                } else if (ddTop > elTop) {
+                    self._dropdown.scrollTop(elTop - ddPaddingTop);
                 }
             } else {
                 jthis.removeClass(self._options.cssClasses["dropdown-item-selected"]);
@@ -406,7 +451,8 @@
         delete this._blurSafeGuard;
         var jitem = $(this._dropdown.children().get(index));
         if (jitem.attr('data-disabled')) return;
-        var chip = this._createToken(JSON.parse(jitem.attr('data-token')));
+        var tokenObj = JSON.parse(jitem.attr('data-token'));
+        var chip = this._createToken(tokenObj);
         
         if (this._currentSearchNodeStartOffset || this._currentSearchNodeEndOffset) {
             var toReplace = this._currentSearchNode.splitText(this._currentSearchNodeStartOffset);
@@ -419,21 +465,26 @@
 
         delete this._currentSearchNode;
         this._padAndSetCursorAfterToken(chip);
+        this._options.onTokenAdded(this, tokenObj);
     };
     
     /**
      * Adds whitespace after an inserted token / chip and sets the
-     * input cursor after that.
+     * input cursor after that if the input has currently focus.
      * 
      * @param {DOMNodeElement} chip Token / chip that was inserted.
      */ 
     Tokchi.prototype._padAndSetCursorAfterToken = function (chip) {
         var space = document.createTextNode('\u00A0');
         chip.after(space);
-        this._input.focus();
-        selection.setRangeAfter(space);
+        
+        if (this._dropdownShowing) {
+            this._input.focus();
+            selection.setRangeAfter(space);
+            this._hideDropdown();
+        }
+
         this._cleanInputMarkup();
-        this._hideDropdown();
 
         if (!this._mutationObserver) {
             this._options.onChange(this);
@@ -579,7 +630,7 @@
                     this._hideDropdown(true);
                 }
                 return;
-                
+
             case KEY.LEFT:
                 if (e.type == 'keydown') {
                     this._hideDropdown(true);
@@ -679,6 +730,11 @@
             this._hideDropdown();
         } else {
             // User is currently typing something into the input field
+            if (this._options.onEdit(this, e) === false) {
+                e.preventDefault();
+                return;
+            }
+            
             var range = selection.get().getRangeAt(0);
             var editedNode = range.startContainer;
 
@@ -739,6 +795,16 @@
         this._currentSearchKey = searchKey;
         this._options.onSearchKeyword(this, searchKey);
     };
+    
+    /**
+     * Gives focus to the tokchi input field and positions the cursor
+     * at the end.
+     */
+    Tokchi.prototype.focus = function () {
+        this._input.focus();
+        var last = this._input.children().last();
+        selection.setRangeAfter(last);
+    };
 
     /**
      * Programmatically adds a token to the input field.
@@ -753,6 +819,8 @@
         if (!this._mutationObserver) {
             this._options.onChange(this);
         }
+
+        this._options.onTokenAdded(this, tokenObj);
     };
     
     /**
@@ -894,8 +962,38 @@
     
     // Register new jQuery function
     $.fn.tokchify = function (options) {
-        return this.each(function () {
-            new Tokchi(this, options);
+        var func, args, result;
+        var first = true;
+
+        if (typeof options == 'string') {
+            func = Tokchi.prototype[options];
+            if (options[0] === '_' || typeof func != 'function')
+                throw 'Unknown method ' + options;
+            args = Array.prototype.slice.call(arguments, 1);
+        }
+        
+        this.each(function () {
+            var $this = $(this);
+            var tokchi = $this.data('tokchi');
+
+            if (!tokchi) {
+                tokchi = new Tokchi(this, options);
+                // Tokchi replaces the original DOM node, that's why we
+                // need to store the instance there
+                tokchi._input.data('tokchi', tokchi);
+                // In case the tokchify method has been chained with
+                // another tokchify call we also need to store the instance
+                // as data for the original (replaced) DOM elements
+                $this.data('tokchi', tokchi);
+            }
+            
+            if (func) {
+                var tmpResult = func.apply(tokchi, args);
+                if (first) result = tmpResult;
+                first = false;
+            }
         });
+
+        return func ? result : this;
     };
 }(jQuery));
