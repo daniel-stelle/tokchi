@@ -44,7 +44,7 @@ One more thing you need to do is define a couple of CSS classes:
 - `tokchi-dropdown-item` is the class that styles an auto-completion suggestion list item
 - `tokchi-dropdown-item-selected` is added to the currently selected auto-completion suggestion list item
 
-You can also take the shortcut and just use the provided CSS file `css/tokchi.css`.
+You can also take a shortcut and just use the provided CSS file `css/tokchi.css`.
 
 ### Initialization Options
 The `tokchify` function accepts an options argument with any of the following properties:
