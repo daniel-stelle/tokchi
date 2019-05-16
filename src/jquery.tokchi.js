@@ -867,6 +867,7 @@
         }
 
         this._options.onTokenAdded(this, tokenObj);
+        this.focus();
     };
 
     /**
