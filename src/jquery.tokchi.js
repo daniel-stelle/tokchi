@@ -870,7 +870,6 @@
         }
 
         this._options.onTokenAdded(this, tokenObj);
-        this._padAndSetCursorAfterToken(chip);
     };
 
     /**
