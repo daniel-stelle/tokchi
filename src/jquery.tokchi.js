@@ -939,7 +939,10 @@
         });
 
         this._dropdownItemsPerPage = Math.floor(this._dropdown.outerHeight() / itemHeight);
-        this._showDropdown();
+
+        if (this._input.textContent) {
+            this._showDropdown();
+        }
     };
 
     /**
