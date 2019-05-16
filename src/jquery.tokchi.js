@@ -851,7 +851,6 @@
     Tokchi.prototype.focus = function () {
         this._input.focus();
         var last = this._input.children().last();
-        last.append(' ');
         selection.setRangeAfter(last);
     };
 
@@ -862,6 +861,7 @@
      */
     Tokchi.prototype.addToken = function (tokenObj) {
         var chip = this._createToken(tokenObj);
+
         this._input.append(chip);
         this._padAndSetCursorAfterToken(chip);
 
@@ -870,7 +870,7 @@
         }
 
         this._options.onTokenAdded(this, tokenObj);
-        this.focus();
+        this._padAndSetCursorAfterToken(chip);
     };
 
     /**
