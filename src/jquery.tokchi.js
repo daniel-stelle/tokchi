@@ -705,7 +705,7 @@
                         var token = JSON.parse(jitem.attr('data-token'));
 
                         self._currentSearchNode.textContent = token.actual;
-                        self._currentSearchNodeEndOffset = token.actual.length;
+                        self._currentSearchNodeEndOffset = self._currentSearchNode.textContent.length;
                         selection.setRangeAfter(self._currentSearchNode);
                     }
 
@@ -724,10 +724,8 @@
                         var jitem = $(this._dropdown.children().get(this._dropdownIndex));
                         var token = JSON.parse(jitem.attr('data-token'));
 
-                        console.log(this._input.children().last);
-
                         self._currentSearchNode.textContent = token.actual;
-                        self._currentSearchNodeEndOffset = token.actual.length;
+                        self._currentSearchNodeEndOffset = self._currentSearchNode.textContent.length;
                         selection.setRangeAfter(self._currentSearchNode);
                     }
 
