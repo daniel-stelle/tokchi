@@ -724,6 +724,8 @@
                         var jitem = $(this._dropdown.children().get(this._dropdownIndex));
                         var token = JSON.parse(jitem.attr('data-token'));
 
+                        console.log(this._input.children().last);
+
                         self._currentSearchNode.textContent = token.actual;
                         self._currentSearchNodeEndOffset = token.actual.length;
                         selection.setRangeAfter(self._currentSearchNode);
@@ -849,6 +851,7 @@
     Tokchi.prototype.focus = function () {
         this._input.focus();
         var last = this._input.children().last();
+        last.append(' ');
         selection.setRangeAfter(last);
     };
 
