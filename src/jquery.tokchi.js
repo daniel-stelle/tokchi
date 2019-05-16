@@ -879,6 +879,7 @@
     Tokchi.prototype.removeToken = function (tokenHTMLNode) {
         $(tokenHTMLNode).remove();
         this._cleanInputMarkup();
+        this._options.onPressReturn(self);
     };
 
     /**
