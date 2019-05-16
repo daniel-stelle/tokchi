@@ -924,6 +924,7 @@
                 })
                 .click(function () {
                     self._pickDropdownItem(i);
+                    self._options.onPressReturn(self);
                 }).attr('data-token', JSON.stringify(item));
 
             if (item.disabled)
