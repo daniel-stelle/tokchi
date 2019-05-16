@@ -11,7 +11,7 @@
             $.getJSON('https://cdn.rawgit.com/adambom/dictionary/master/dictionary.json', function(data) {
                 var index = {};
                 var id = 1;
-                
+
                 for (var key in data) {
                     key = key.toLowerCase();
                     var subIndex = index[key.charAt(0)] || (index[key.charAt(0)] = {});
@@ -35,17 +35,19 @@
                         console.debug('Did change');
                         var tokens = tokchi.getTokens();
                         var sel = '';
-                        
+
                         tokens.forEach(function(token) {
                             if(sel) sel += ', ';
                             sel += token.label + ' (ID=' + token.id + ')';
                         });
-                        
+
                         $('#selection').text(sel ? ('Selection = ' + sel) : '');
                     },
                     onCreateDropdownItem : function (tokchi, itemHTMLNode, resultItem) {
+                        const preTokens = tokchi.getTokens().map(token => token.label).join(' ');
+
                         $(itemHTMLNode)
-                            .text(resultItem.label)
+                            .text(preTokens + ' ' + resultItem.label)
                             .append($('<div>')
                             .addClass('sub')
                             .text('ID: ' + resultItem.id));
@@ -58,7 +60,7 @@
                         var sub = index[keyword.charAt(0)];
                         result = [];
                         var count = 0;
-                        
+
                         for (var key in sub) {
                             if (key.indexOf(keyword) === 0) {
                                 if (count++ > 20) break;
@@ -76,7 +78,7 @@
                 $('#pw').remove();
             });
         });
-        
+
         function setDDStyle (style) {
             tokchi.setDropdownStyle(style);
         }
