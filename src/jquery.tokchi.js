@@ -488,35 +488,6 @@
     };
 
     /**
-     * Inserts the currently selected dropdown item as a token
-     * into the input field.
-     */
-    Tokchi.prototype._pickDropdownItemAsObject = function (jitem) {
-        delete this._blurSafeGuard;
-        if (jitem.attr('data-disabled')) return;
-
-        let tokenObj = JSON.parse(jitem.attr('data-token'));
-        let chip = this._createToken(tokenObj);
-
-        if (this._currentSearchNodeStartOffset || this._currentSearchNodeEndOffset) {
-            let toReplace = this._currentSearchNode.splitText(this._currentSearchNodeStartOffset);
-            let offs = this._currentSearchNodeEndOffset - this._currentSearchNodeStartOffset;
-
-            if (offs && offs < toReplace.nodeValue.length) {
-                toReplace.splitText(offs);
-            }
-
-            $(toReplace).replaceWith(chip);
-        } else {
-            $(this._currentSearchNode).replaceWith(chip);
-        }
-
-        delete this._currentSearchNode;
-        this._padAndSetCursorAfterToken(chip);
-        this._options.onTokenAdded(this, tokenObj);
-    };
-
-    /**
      * Adds whitespace after an inserted token / chip and sets the
      * input cursor after that if the input has currently focus.
      *
@@ -892,7 +863,7 @@
         let previousToken = null;
 
         if (this.getTokens().length) {
-            previousToken = this._getClosestToken(false);
+            previousToken = this.getTokens()[this.getTokens().length - 1];
         }
 
         this._options.onSearchKeyword(this, searchKey, previousToken);
