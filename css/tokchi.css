@@ -68,3 +68,11 @@
     margin-left: 5px;
 	cursor: pointer;
 }
+
+.hide-token {
+	display: none;
+}
+
+.missing-result {
+	text-decoration: line-through;
+}

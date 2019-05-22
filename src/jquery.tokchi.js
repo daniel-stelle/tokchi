@@ -52,14 +52,26 @@
         },
 
         /**
+         * Callback for space bar press.
+         *
+         * @param tokchi Tokchi instance.
+         * @return True in order to suppress space bar press event propagation
+         *      to input field.
+         */
+        onPressSpace : function (tokchi) {
+            return true;
+        },
+
+        /**
          * Keyword search handler.
          *
          * Must call `tokchi.setSearchResult(result)` when search result is available.
          *
          * @param tokchi Tokchi instance.
-         * @param token Keyword to search.
+         * @param keyword Keyword to search.
+         * @param previousToken The last token relative to the cursor.
          */
-        onSearchKeyword : function (tokchi, keyword) {
+        onSearchKeyword : function (tokchi, keyword, previousToken) {
             tokchi.setSearchResult([{label : keyword}]);
         },
 
@@ -132,7 +144,9 @@
             'dropdown-item' : 'tokchi-dropdown-item',
             'dropdown-item-selected' : 'tokchi-dropdown-item-selected',
             'token' : 'tokchi-token',
-            'token-close-button' : 'tokchi-token-close-button'
+            'token-close-button' : 'tokchi-token-close-button',
+            missing: 'missing-result',
+            hideToken: 'hide-token'
         },
 
         /**
@@ -433,13 +447,15 @@
     Tokchi.prototype._setDropdownSelection = function (index) {
         var child = this._dropdown.children().get(this._dropdownIndex);
 
-        if (child)
+        if (child) {
             $(child).removeClass(this._options.cssClasses["dropdown-item-selected"]);
+        }
 
         child = $(this._dropdown.children().get(index));
 
-        if (!child.attr('data-disabled'))
+        if (!child.attr('data-disabled')) {
             child.addClass(this._options.cssClasses["dropdown-item-selected"]);
+        }
 
         this._dropdownIndex = index;
     };
@@ -450,15 +466,24 @@
      */
     Tokchi.prototype._pickDropdownItem = function (index) {
         delete this._blurSafeGuard;
-        var jitem = $(this._dropdown.children().get(index));
+        let jitem = $(this._dropdown.children().get(index));
         if (jitem.attr('data-disabled')) return;
-        var tokenObj = JSON.parse(jitem.attr('data-token'));
-        var chip = this._createToken(tokenObj);
+
+        if (JSON.parse(jitem.attr('data-token')).description === 'previous') {
+            $(this._input.children().get(this._input.children().length - 1)).remove();
+        }
+
+        let tokenObj = JSON.parse(jitem.attr('data-token'));
+        let chip = this._createToken(tokenObj);
 
         if (this._currentSearchNodeStartOffset || this._currentSearchNodeEndOffset) {
-            var toReplace = this._currentSearchNode.splitText(this._currentSearchNodeStartOffset);
-            var offs = this._currentSearchNodeEndOffset - this._currentSearchNodeStartOffset;
-            if (offs && offs < toReplace.nodeValue.length) toReplace.splitText(offs);
+            let toReplace = this._currentSearchNode.splitText(this._currentSearchNodeStartOffset);
+            let offs = this._currentSearchNodeEndOffset - this._currentSearchNodeStartOffset;
+
+            if (offs && offs < toReplace.nodeValue.length) {
+                toReplace.splitText(offs);
+            }
+
             $(toReplace).replaceWith(chip);
         } else {
             $(this._currentSearchNode).replaceWith(chip);
@@ -476,7 +501,7 @@
      * @param {DOMNodeElement} chip Token / chip that was inserted.
      */
     Tokchi.prototype._padAndSetCursorAfterToken = function (chip) {
-        var space = document.createTextNode('\u00A0');
+        let space = document.createTextNode('\u00A0');
         chip.after(space);
 
         if (this._dropdownShowing) {
@@ -525,6 +550,10 @@
             .each(function (i, token) {
                 self._options.onCreateToken(self, token, tokenObj);
             });
+
+        if (tokenObj.missing) {
+            chip.addClass(this._options.cssClasses.missing)
+        }
 
         if (!this._mutationObserver) {
             chip.bind('DOMNodeRemoved', function () {
@@ -607,7 +636,7 @@
      * @param e Event object.
      */
     Tokchi.prototype._onInput = function (e) {
-        var self = this;
+        let self = this;
 
         if (e.type == 'paste') {
             setTimeout(function () {
@@ -635,7 +664,7 @@
             case KEY.LEFT:
                 if (e.type == 'keydown') {
                     this._hideDropdown(true);
-                    var token = this._getClosestToken(false);
+                    let token = this._getClosestToken(false);
 
                     if (token) {
                         selection.setRangeBefore(token);
@@ -646,7 +675,7 @@
             case KEY.RIGHT:
                 if (e.type == 'keydown') {
                     this._hideDropdown(true);
-                    var token = this._getClosestToken(true);
+                    let token = this._getClosestToken(true);
 
                     if (token) {
                         selection.setRangeBefore(token);
@@ -657,11 +686,11 @@
             case KEY.DEL:
                 if (e.type == 'keydown') {
                     this._cleanInputMarkup();
-                    var token = this._getClosestToken(true);
+                    let token = this._getClosestToken(true);
 
                     if (token) {
                         tokenObj = JSON.parse(token.attr('data-token'));
-                        var label = document.createTextNode(this._options.onUnwrapToken(this, token, tokenObj));
+                        let label = document.createTextNode(this._options.onUnwrapToken(this, token, tokenObj));
                         token.replaceWith(label);
                         e.preventDefault();
                         this._hideDropdown(true);
@@ -672,12 +701,12 @@
             case KEY.BACKSPACE:
                 if (e.type == 'keydown') {
                     this._cleanInputMarkup();
-                    var token = this._getClosestToken(false);
+                    let token = this._getClosestToken(false);
 
                     if (token) {
                         tokenObj = JSON.parse(token.attr('data-token'));
-                        var label = document.createTextNode(this._options.onUnwrapToken(this, token, tokenObj));
-                        var next = token.get(0).nextSibling;
+                        let label = document.createTextNode(this._options.onUnwrapToken(this, token, tokenObj));
+                        let next = token.get(0).nextSibling;
                         token.replaceWith(label);
 
                         if (next) {
@@ -701,8 +730,20 @@
                     if (e.type == 'keydown') {
                         this._moveDropdownSelection(e.keyCode == KEY.DOWN ? 1 : this._dropdownItemsPerPage);
 
-                        var jitem = $(this._dropdown.children().get(this._dropdownIndex));
-                        var token = JSON.parse(jitem.attr('data-token'));
+                        let jitem = $(this._dropdown.children().get(this._dropdownIndex));
+                        let token = JSON.parse(jitem.attr('data-token'));
+
+                        if (token.description === 'previous') {
+                            let lastToken = this._input.children().get(this._input.children().length - 1);
+
+                            if (lastToken && lastToken.localName === 'br') {
+                                $(this._input.children().get(this._input.children().length - 1)).remove();
+                            }
+
+                            $(this._input.children().get(this._input.children().length - 1)).addClass(this._options.cssClasses.hideToken);
+                        } else {
+                            $(this._input.children()).removeClass(this._options.cssClasses.hideToken);
+                        }
 
                         self._currentSearchNode.textContent = token.label;
                         self._currentSearchNodeEndOffset = self._currentSearchNode.textContent.length;
@@ -721,8 +762,20 @@
                     if (e.type == 'keydown') {
                         this._moveDropdownSelection(e.keyCode == KEY.UP ? -1 : -this._dropdownItemsPerPage);
 
-                        var jitem = $(this._dropdown.children().get(this._dropdownIndex));
-                        var token = JSON.parse(jitem.attr('data-token'));
+                        let jitem = $(this._dropdown.children().get(this._dropdownIndex));
+                        let token = JSON.parse(jitem.attr('data-token'));
+
+                        if (token.description === 'previous') {
+                            let lastToken = this._input.children().get(this._input.children().length - 1);
+
+                            if (lastToken && lastToken.localName === 'br') {
+                                $(this._input.children().get(this._input.children().length - 1)).remove();
+                            }
+
+                            $(this._input.children().get(this._input.children().length - 1)).addClass(this._options.cssClasses.hideToken);
+                        } else {
+                            $(this._input.children()).removeClass(this._options.cssClasses.hideToken);
+                        }
 
                         self._currentSearchNode.textContent = token.label;
                         self._currentSearchNodeEndOffset = self._currentSearchNode.textContent.length;
@@ -757,21 +810,23 @@
                 if (this._dropdownShowing) {
                     e.preventDefault();
 
-                    if (e.type == 'keyup') {
+                    if (e.type === 'keyup') {
                         if (this._dropdownIndex === -1) {
                             this._dropdownIndex = 0;
                         }
 
-                        this._setDropdownSelection(this._dropdownIndex);
                         this._pickDropdownItem(this._dropdownIndex);
                     }
 
+                    return;
+                } else if (this._options.onPressSpace(this)) {
+                    e.preventDefault();
                     return;
                 }
                 break;
         }
 
-        if (this._input.text().trim().length == 0) {
+        if (this._input.text().trim().length === 0) {
             this._dropdown.empty();
             this._hideDropdown();
         } else {
@@ -781,8 +836,8 @@
                 return;
             }
 
-            var range = selection.get().getRangeAt(0);
-            var editedNode = range.startContainer;
+            let range = selection.get().getRangeAt(0);
+            let editedNode = range.startContainer;
 
             if (editedNode.nodeType == 3 && this._inputNode == editedNode.parentNode) {
                 if (e.type == 'keydown') return;
@@ -839,7 +894,14 @@
         searchKey = searchKey.replace('\u00A0', ' ').trim();
         if (this._currentSearchKey == searchKey) return;
         this._currentSearchKey = searchKey;
-        this._options.onSearchKeyword(this, searchKey);
+
+        let previousToken = null;
+
+        if (this.getTokens().length) {
+            previousToken = this.getTokens()[this.getTokens().length - 1];
+        }
+
+        this._options.onSearchKeyword(this, searchKey, previousToken);
     };
 
     /**
@@ -858,9 +920,23 @@
      * @param {object} tokenObj Token description object.
      */
     Tokchi.prototype.addToken = function (tokenObj) {
-        var chip = this._createToken(tokenObj);
+        const chip = this._createToken(tokenObj);
 
-        this._input.append(chip);
+        if (this._currentSearchNodeStartOffset || this._currentSearchNodeEndOffset) {
+            let toReplace = this._currentSearchNode.splitText(this._currentSearchNodeStartOffset);
+            let offs = this._currentSearchNodeEndOffset - this._currentSearchNodeStartOffset;
+
+            if (offs && offs < toReplace.nodeValue.length) {
+                toReplace.splitText(offs);
+            }
+
+            $(toReplace).replaceWith(chip);
+        } else if (this._currentSearchNode) {
+            $(this._currentSearchNode).replaceWith(chip);
+        } else {
+            this._input.append(chip);
+        }
+
         this._padAndSetCursorAfterToken(chip);
 
         if (!this._mutationObserver) {
