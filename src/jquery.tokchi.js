@@ -467,10 +467,8 @@
         let jitem = $(this._dropdown.children().get(index));
         if (jitem.attr('data-disabled')) return;
 
-        if (jitem.description === 'previous') {
-            // remove the previous token
+        if (JSON.parse(jitem.attr('data-token')).description === 'previous') {
             $(this._input.children().get(this._input.children().length - 1)).remove();
-            this._cleanInputMarkup();
         }
 
         let tokenObj = JSON.parse(jitem.attr('data-token'));
@@ -729,6 +727,20 @@
                         let jitem = $(this._dropdown.children().get(this._dropdownIndex));
                         let token = JSON.parse(jitem.attr('data-token'));
 
+                        if (token.description === 'previous') {
+                            let lastToken = this._input.children().get(this._input.children().length - 1);
+
+                            console.log(lastToken);
+
+                            if (lastToken && lastToken.localName === 'br') {
+                                $(this._input.children().get(this._input.children().length - 1)).remove();
+                            }
+
+                            $(this._input.children().get(this._input.children().length - 1)).addClass('hideToken');
+                        } else {
+                            $(this._input.children()).removeClass('hideToken');
+                        }
+
                         self._currentSearchNode.textContent = token.label;
                         self._currentSearchNodeEndOffset = self._currentSearchNode.textContent.length;
                         selection.setRangeAfter(self._currentSearchNode);
@@ -748,6 +760,20 @@
 
                         let jitem = $(this._dropdown.children().get(this._dropdownIndex));
                         let token = JSON.parse(jitem.attr('data-token'));
+
+                        if (token.description === 'previous') {
+                            let lastToken = this._input.children().get(this._input.children().length - 1);
+
+                            console.log(lastToken);
+
+                            if (lastToken && lastToken.localName === 'br') {
+                                $(this._input.children().get(this._input.children().length - 1)).remove();
+                            }
+
+                            $(this._input.children().get(this._input.children().length - 1)).addClass('hideToken');
+                        } else {
+                            $(this._input.children()).removeClass('hideToken');
+                        }
 
                         self._currentSearchNode.textContent = token.label;
                         self._currentSearchNodeEndOffset = self._currentSearchNode.textContent.length;

@@ -8,6 +8,49 @@
     <script type="application/javascript" src="../src/jquery.tokchi.js"></script>
     <script type="application/javascript">
         $(document).ready(function() {
+            const DUMMY_DATA = [
+                {
+                    "id": "3812",
+                    "type": "hashtag",
+                    "label": "Washington Redskins",
+                    "description": "previous",
+                    "use_count": 0,
+                    "alternatives": []
+                },
+                {
+                    "id": "8010",
+                    "type": "hashtag",
+                    "label": "REDSKINS",
+                    "description": null,
+                    "use_count": 0,
+                    "alternatives": []
+                },
+                {
+                    "id": "8848",
+                    "type": "hashtag",
+                    "label": "Test redskins things",
+                    "description": null,
+                    "use_count": 0,
+                    "alternatives": []
+                },
+                {
+                    "id": "8849",
+                    "type": "hashtag",
+                    "label": "Last word redskins",
+                    "description": null,
+                    "use_count": 0,
+                    "alternatives": []
+                },
+                {
+                    "id": "7821",
+                    "type": "hashtag",
+                    "label": "WASHINGTON",
+                    "description": null,
+                    "use_count": 0,
+                    "alternatives": []
+                }
+            ];
+
             $('#search').tokchify({
                 dropdownStyle: 'follows',
                 onReady(tokchi) {
@@ -26,11 +69,6 @@
                     }
 
                     return true;
-                },
-                onCreateToken(tokchi, tokenHTMLNode, tokenObj) {
-                    $(tokenHTMLNode).append(
-                        $('<div>').text(tokenObj.label)
-                    );
                 },
                 onChange(tokchi) {
                     console.debug('Did change');
@@ -60,17 +98,20 @@
                     return tokenObj.label;
                 },
                 onSearchKeyword(tokchi, keyword, previousToken) {
-                    $.getJSON('https://jsonplaceholder.typicode.com/comments', function(data) {
-                        const results = data.slice(0, 20).filter(comment => comment.name.includes(keyword));
-                        const skimmedData = results.map(item => {
+                    const data = DUMMY_DATA.slice(0, 20).filter(match => match.label.toLowerCase().includes(keyword));
+                    // $.getJSON('https://jsonplaceholder.typicode.com/comments', function(data) {
+                        const skimmedData = data.map(item => {
                             return {
                                 'id': item.id,
-                                'label': item.name
+                                'type': item.type,
+                                'label': item.label,
+                                'description': item.description,
+                                'code': 'pris_' + item.label.toLowerCase()
                             };
                         });
 
                         tokchi.setSearchResult(skimmedData);
-                    });
+                    // });
                 }
             });
         });
