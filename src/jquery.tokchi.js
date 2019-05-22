@@ -71,7 +71,7 @@
          * @param keyword Keyword to search.
          * @param previousToken The last token relative to the cursor.
          */
-        onSearchKeyword : function (tokchi, keyword, previousToken = null) {
+        onSearchKeyword : function (tokchi, keyword, previousToken) {
             tokchi.setSearchResult([{label : keyword}]);
         },
 
@@ -888,7 +888,14 @@
         searchKey = searchKey.replace('\u00A0', ' ').trim();
         if (this._currentSearchKey == searchKey) return;
         this._currentSearchKey = searchKey;
-        this._options.onSearchKeyword(this, searchKey, this._getClosestToken(false));
+
+        let previousToken = null;
+
+        if (this.getTokens().length) {
+            previousToken = this._getClosestToken(false);
+        }
+
+        this._options.onSearchKeyword(this, searchKey, previousToken);
     };
 
     /**
