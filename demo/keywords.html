@@ -45,7 +45,10 @@
                     $('#selection').text(sel ? ('Selection = ' + sel) : '');
                 },
                 onCreateDropdownItem(tokchi, itemHTMLNode, resultItem) {
-                    const preTokens = tokchi.getTokens().map(token => token.label).join(' ');
+                    const tokens = resultItem.description === 'previous'
+                                 ? tokchi.getTokens().slice(0, tokchi.getTokens().length - 2)
+                                 : tokchi.getTokens();
+                    const preTokens = tokens.map(token => token.label).join(' ');
 
                     $(itemHTMLNode)
                         .text(preTokens + ' ' + resultItem.label)
