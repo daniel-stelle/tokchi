@@ -466,6 +466,13 @@
         delete this._blurSafeGuard;
         let jitem = $(this._dropdown.children().get(index));
         if (jitem.attr('data-disabled')) return;
+
+        if (jitem.description === 'previous') {
+            // remove the previous token
+            $(this.getTokens()[this.getTokens().length - 1]).remove();
+            this._cleanInputMarkup();
+        }
+
         let tokenObj = JSON.parse(jitem.attr('data-token'));
         let chip = this._createToken(tokenObj);
 
