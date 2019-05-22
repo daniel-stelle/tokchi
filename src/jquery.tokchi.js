@@ -469,7 +469,7 @@
 
         if (jitem.description === 'previous') {
             // remove the previous token
-            $(this.getTokens()[this.getTokens().length - 1]).remove();
+            $(this._input.children().get(this._input.children().length - 1)).remove();
             this._cleanInputMarkup();
         }
 
