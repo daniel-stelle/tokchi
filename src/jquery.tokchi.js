@@ -144,7 +144,9 @@
             'dropdown-item' : 'tokchi-dropdown-item',
             'dropdown-item-selected' : 'tokchi-dropdown-item-selected',
             'token' : 'tokchi-token',
-            'token-close-button' : 'tokchi-token-close-button'
+            'token-close-button' : 'tokchi-token-close-button',
+            missing: 'missing-result',
+            hideToken: 'hide-token'
         },
 
         /**
@@ -549,6 +551,10 @@
                 self._options.onCreateToken(self, token, tokenObj);
             });
 
+        if (tokenObj.missing) {
+            chip.addClass(this._options.cssClasses.missing)
+        }
+
         if (!this._mutationObserver) {
             chip.bind('DOMNodeRemoved', function () {
                 self._options.onChange(self);
@@ -730,15 +736,13 @@
                         if (token.description === 'previous') {
                             let lastToken = this._input.children().get(this._input.children().length - 1);
 
-                            console.log(lastToken);
-
                             if (lastToken && lastToken.localName === 'br') {
                                 $(this._input.children().get(this._input.children().length - 1)).remove();
                             }
 
-                            $(this._input.children().get(this._input.children().length - 1)).addClass('hideToken');
+                            $(this._input.children().get(this._input.children().length - 1)).addClass(this._options.cssClasses.hideToken);
                         } else {
-                            $(this._input.children()).removeClass('hideToken');
+                            $(this._input.children()).removeClass(this._options.cssClasses.hideToken);
                         }
 
                         self._currentSearchNode.textContent = token.label;
@@ -764,15 +768,13 @@
                         if (token.description === 'previous') {
                             let lastToken = this._input.children().get(this._input.children().length - 1);
 
-                            console.log(lastToken);
-
                             if (lastToken && lastToken.localName === 'br') {
                                 $(this._input.children().get(this._input.children().length - 1)).remove();
                             }
 
-                            $(this._input.children().get(this._input.children().length - 1)).addClass('hideToken');
+                            $(this._input.children().get(this._input.children().length - 1)).addClass(this._options.cssClasses.hideToken);
                         } else {
-                            $(this._input.children()).removeClass('hideToken');
+                            $(this._input.children()).removeClass(this._options.cssClasses.hideToken);
                         }
 
                         self._currentSearchNode.textContent = token.label;

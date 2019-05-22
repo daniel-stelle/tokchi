@@ -69,6 +69,10 @@
 	cursor: pointer;
 }
 
-.hideToken {
+.hide-token {
 	display: none;
+}
+
+.missing-result {
+	text-decoration: line-through;
 }

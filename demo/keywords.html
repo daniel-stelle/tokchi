@@ -63,24 +63,12 @@
                 onPressSpace(tokchi) {
                     if (tokchi._currentSearchNode.textContent.trim()) {
                         tokchi.addToken({
-                            id: Math.floor(Math.random()),
-                            label: tokchi._currentSearchNode.textContent
+                            label: tokchi._currentSearchNode.textContent,
+                            missing: true
                         });
                     }
 
                     return true;
-                },
-                onChange(tokchi) {
-                    console.debug('Did change');
-                    var tokens = tokchi.getTokens();
-                    var sel = '';
-
-                    tokens.forEach(function(token) {
-                        if(sel) sel += ', ';
-                        sel += token.label + ' (ID=' + token.id + ')';
-                    });
-
-                    $('#selection').text(sel ? ('Selection = ' + sel) : '');
                 },
                 onCreateDropdownItem(tokchi, itemHTMLNode, resultItem) {
                     const tokens = resultItem.description === 'previous'
