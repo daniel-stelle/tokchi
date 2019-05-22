@@ -1,6 +1,6 @@
 {
 	"name": "tokchi",
-	"version": "2.2.1",
+	"version": "2.3.1",
 	"description": "jQuery plugin that adds Mac OS X style tokens or Android style chips to a text input field",
 	"source": "src/jquery.tokchi.js",
 	"main": "src/jquery.tokchi.js",
